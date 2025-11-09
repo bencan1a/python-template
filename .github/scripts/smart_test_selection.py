@@ -16,10 +16,10 @@ from typing import List, Set
 
 def get_changed_files(base_ref: str = "origin/main") -> List[str]:
     """Get list of changed files compared to base reference.
-    
+
     Args:
         base_ref: Git reference to compare against (default: origin/main)
-        
+
     Returns:
         List of changed file paths
     """
@@ -30,15 +30,16 @@ def get_changed_files(base_ref: str = "origin/main") -> List[str]:
             check=False,
             capture_output=True,
         )
-        
+
         # Get the list of changed files
         result = subprocess.run(
             ["git", "diff", "--name-only", f"{base_ref}...HEAD"],
             capture_output=True,
             text=True,
-            check=True,
+            check=False,
         )
-        
+
+        # If the diff command failed, try fallback
         if result.returncode != 0:
             # Fallback: try to get all changed files in the current commit
             result = subprocess.run(
@@ -47,7 +48,7 @@ def get_changed_files(base_ref: str = "origin/main") -> List[str]:
                 text=True,
                 check=False,
             )
-        
+
         changed_files = [f.strip() for f in result.stdout.strip().split("\n") if f.strip()]
         return changed_files
     except subprocess.CalledProcessError as e:
@@ -57,45 +58,50 @@ def get_changed_files(base_ref: str = "origin/main") -> List[str]:
 
 def map_source_to_tests(source_files: List[str]) -> Set[str]:
     """Map source files to their corresponding test files.
-    
+
     Args:
         source_files: List of source file paths
-        
+
     Returns:
         Set of test file paths
     """
     test_files = set()
     project_root = Path(__file__).parent.parent.parent
-    
+
     for source_file in source_files:
         source_path = Path(source_file)
-        
+
         # Skip non-Python files
         if source_path.suffix != ".py":
             continue
-            
+
         # Skip files not in src directory
         if not str(source_path).startswith("src/"):
             continue
-        
+
         # Map to test file
         # src/python_template/calculator.py -> tests/test_calculator.py
-        relative_to_src = source_path.relative_to("src/python_template")
+        try:
+            relative_to_src = source_path.relative_to("src/python_template")
+        except ValueError:
+            # Skip files not in src/python_template
+            continue
+
         test_name = f"test_{relative_to_src.stem}.py"
         test_path = project_root / "tests" / test_name
-        
+
         if test_path.exists():
             test_files.add(str(test_path.relative_to(project_root)))
-    
+
     return test_files
 
 
 def get_changed_source_files(changed_files: List[str]) -> List[str]:
     """Filter changed files to only include source files in src directory.
-    
+
     Args:
         changed_files: List of all changed files
-        
+
     Returns:
         List of changed source files in src directory
     """
@@ -109,9 +115,7 @@ def get_changed_source_files(changed_files: List[str]) -> List[str]:
 
 def main():
     """Main entry point for smart test selection."""
-    parser = argparse.ArgumentParser(
-        description="Smart test selection based on changed files"
-    )
+    parser = argparse.ArgumentParser(description="Smart test selection based on changed files")
     parser.add_argument(
         "--base-ref",
         default="origin/main",
@@ -128,12 +132,12 @@ def main():
         action="store_true",
         help="Output the changed source files instead of test files",
     )
-    
+
     args = parser.parse_args()
-    
+
     # Get changed files
     changed_files = get_changed_files(args.base_ref)
-    
+
     if not changed_files:
         print("No files changed", file=sys.stderr)
         if args.format == "json":
@@ -143,10 +147,10 @@ def main():
         else:
             print("")
         return 0
-    
+
     # Get changed source files
     changed_source_files = get_changed_source_files(changed_files)
-    
+
     if args.output_changed_files:
         # Output changed source files (for coverage reporting)
         if args.format == "json":
@@ -155,16 +159,13 @@ def main():
             for file in changed_source_files:
                 print(file)
         return 0
-    
+
     # Map to test files
     test_files = map_source_to_tests(changed_source_files)
-    
+
     # Output based on format
     if args.format == "json":
-        print(json.dumps({
-            "tests": sorted(test_files),
-            "changed_files": changed_source_files
-        }))
+        print(json.dumps({"tests": sorted(test_files), "changed_files": changed_source_files}))
     elif args.format == "pytest":
         if test_files:
             print(" ".join(sorted(test_files)))
@@ -173,7 +174,7 @@ def main():
     else:  # list
         for test in sorted(test_files):
             print(test)
-    
+
     return 0
 
 

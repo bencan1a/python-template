@@ -55,7 +55,7 @@ jobs:
           echo "::group::Smart Test Selection"
           python .github/scripts/smart_test_selection.py --base-ref origin/${{ github.base_ref }} --format json > test-selection.json
           cat test-selection.json
-          TEST_FILES=$(python .github/scripts/smart_test_selection.py --base-ref origin/${{ github.base_ref }} --format pytest)
+          TEST_FILES=$(jq -r '.tests | join(" ")' test-selection.json)
           echo "Selected tests: $TEST_FILES"
           echo "::endgroup::"
           

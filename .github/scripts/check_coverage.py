@@ -8,20 +8,28 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List
+from typing import List
+
+try:
+    from coverage import Coverage
+except ImportError:
+    Coverage = None  # type: ignore
 
 
-def load_coverage_data(coverage_file: str = ".coverage") -> Dict:
+def load_coverage_data(coverage_file: str = ".coverage") -> Coverage:
     """Load coverage data from coverage.py data file.
-    
+
     Args:
         coverage_file: Path to .coverage file
-        
+
     Returns:
-        Dictionary containing coverage data
+        Coverage object loaded from the specified file
     """
+    if Coverage is None:
+        print("Error: coverage package not installed", file=sys.stderr)
+        sys.exit(1)
+
     try:
-        from coverage import Coverage
         cov = Coverage(data_file=coverage_file)
         cov.load()
         return cov
@@ -35,11 +43,11 @@ def load_coverage_data(coverage_file: str = ".coverage") -> Dict:
 
 def get_file_coverage(cov, file_path: str) -> float:
     """Get coverage percentage for a specific file.
-    
+
     Args:
         cov: Coverage object
         file_path: Path to file to check
-        
+
     Returns:
         Coverage percentage (0-100)
     """
@@ -47,7 +55,7 @@ def get_file_coverage(cov, file_path: str) -> float:
         analysis = cov.analysis(file_path)
         if analysis:
             executed = len(analysis[1])  # Executed lines
-            missing = len(analysis[2])    # Missing lines
+            missing = len(analysis[2])  # Missing lines
             total = executed + missing
             if total > 0:
                 return (executed / total) * 100
@@ -57,64 +65,62 @@ def get_file_coverage(cov, file_path: str) -> float:
 
 
 def check_coverage_threshold(
-    changed_files: List[str],
-    threshold: float = 70.0,
-    coverage_file: str = ".coverage"
+    changed_files: List[str], threshold: float = 70.0, coverage_file: str = ".coverage"
 ) -> bool:
     """Check if coverage meets threshold for changed files.
-    
+
     Args:
         changed_files: List of files to check coverage for
         threshold: Minimum coverage percentage required
         coverage_file: Path to .coverage file
-        
+
     Returns:
         True if all files meet threshold, False otherwise
     """
     if not changed_files:
         print("No files to check coverage for")
         return True
-    
+
     cov = load_coverage_data(coverage_file)
     project_root = Path.cwd()
-    
+
     all_pass = True
     total_coverage = 0.0
-    
+    files_checked = 0
+
     print(f"\nChecking coverage (threshold: {threshold}%):")
     print("-" * 70)
-    
+
     for file_path in changed_files:
         # Convert to absolute path
         abs_path = (project_root / file_path).resolve()
-        
+
         if not abs_path.exists():
             print(f"  {file_path}: File not found")
             continue
-        
+
+        files_checked += 1
         coverage_pct = get_file_coverage(cov, str(abs_path))
         total_coverage += coverage_pct
-        
+
         status = "✓" if coverage_pct >= threshold else "✗"
         print(f"  {status} {file_path}: {coverage_pct:.1f}%")
-        
+
         if coverage_pct < threshold:
             all_pass = False
-    
+
     print("-" * 70)
-    
-    if changed_files:
-        avg_coverage = total_coverage / len(changed_files)
+
+    if files_checked > 0:
+        avg_coverage = total_coverage / files_checked
         print(f"Average coverage: {avg_coverage:.1f}%")
-    
+
     return all_pass
 
 
 def main():
     """Main entry point for coverage checking."""
-    parser = argparse.ArgumentParser(
-        description="Check coverage threshold for specific files"
-    )
+    parser = argparse.ArgumentParser(description="Check coverage threshold for specific files")
     parser.add_argument(
         "--files",
         nargs="+",
@@ -135,12 +141,12 @@ def main():
         "--files-from-json",
         help="Read files from JSON output of smart_test_selection.py",
     )
-    
+
     args = parser.parse_args()
-    
+
     # Get list of files to check
     files_to_check = []
-    
+
     if args.files_from_json:
         try:
             with open(args.files_from_json) as f:
@@ -154,18 +160,14 @@ def main():
     else:
         print("No files specified to check", file=sys.stderr)
         return 1
-    
+
     # Check coverage
-    passed = check_coverage_threshold(
-        files_to_check,
-        args.threshold,
-        args.coverage_file
-    )
-    
+    passed = check_coverage_threshold(files_to_check, args.threshold, args.coverage_file)
+
     if not passed:
         print("\n❌ Coverage check failed: Some files below threshold", file=sys.stderr)
         return 1
-    
+
     print("\n✅ Coverage check passed: All files meet threshold")
     return 0
 

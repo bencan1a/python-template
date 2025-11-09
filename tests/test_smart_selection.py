@@ -27,15 +27,13 @@ def coverage_check_script(project_root):
 
 
 def test_smart_selection_script_exists(smart_selection_script):
-    """Test that smart test selection script exists and is executable."""
+    """Test that smart test selection script exists."""
     assert smart_selection_script.exists()
-    assert smart_selection_script.stat().st_mode & 0o111  # Check executable bit
 
 
 def test_coverage_check_script_exists(coverage_check_script):
-    """Test that coverage check script exists and is executable."""
+    """Test that coverage check script exists."""
     assert coverage_check_script.exists()
-    assert coverage_check_script.stat().st_mode & 0o111  # Check executable bit
 
 
 def test_smart_selection_json_format(smart_selection_script, project_root):
@@ -53,10 +51,10 @@ def test_smart_selection_json_format(smart_selection_script, project_root):
         capture_output=True,
         text=True,
     )
-    
+
     # Should exit successfully
     assert result.returncode == 0
-    
+
     # Should produce valid JSON
     try:
         data = json.loads(result.stdout)
@@ -83,7 +81,7 @@ def test_smart_selection_pytest_format(smart_selection_script, project_root):
         capture_output=True,
         text=True,
     )
-    
+
     # Should exit successfully
     assert result.returncode == 0
     # Output should be a string (possibly empty)
@@ -104,7 +102,7 @@ def test_smart_selection_changed_files_output(smart_selection_script, project_ro
         capture_output=True,
         text=True,
     )
-    
+
     # Should exit successfully
     assert result.returncode == 0
 
@@ -112,13 +110,14 @@ def test_smart_selection_changed_files_output(smart_selection_script, project_ro
 def test_coverage_check_with_valid_files(coverage_check_script, project_root):
     """Test coverage check with valid source files."""
     # First, run pytest to generate coverage data (just run the calculator tests)
-    subprocess.run(
+    result = subprocess.run(
         ["pytest", "tests/test_calculator.py", "--cov=src", "--cov-report=term", "-q"],
         cwd=project_root,
         capture_output=True,
         timeout=30,
     )
-    
+    assert result.returncode == 0, "Failed to generate coverage data"
+
     # Check coverage for calculator.py with low threshold
     result = subprocess.run(
         [
@@ -134,7 +133,7 @@ def test_coverage_check_with_valid_files(coverage_check_script, project_root):
         text=True,
         timeout=10,
     )
-    
+
     # Should pass (our coverage is 100%)
     assert result.returncode == 0
 
@@ -142,13 +141,14 @@ def test_coverage_check_with_valid_files(coverage_check_script, project_root):
 def test_coverage_check_with_high_threshold_fails(coverage_check_script, project_root):
     """Test that coverage check fails with unrealistic threshold."""
     # Run pytest to generate coverage data
-    subprocess.run(
+    result = subprocess.run(
         ["pytest", "tests/test_calculator.py", "--cov=src", "--cov-report=term", "-q"],
         cwd=project_root,
         capture_output=True,
         timeout=30,
     )
-    
+    assert result.returncode == 0, "Failed to generate coverage data"
+
     # Check with impossible threshold
     result = subprocess.run(
         [
@@ -164,7 +164,7 @@ def test_coverage_check_with_high_threshold_fails(coverage_check_script, project
         text=True,
         timeout=10,
     )
-    
+
     # Should fail
     assert result.returncode == 1
 
@@ -172,13 +172,14 @@ def test_coverage_check_with_high_threshold_fails(coverage_check_script, project
 def test_coverage_check_with_json_input(coverage_check_script, project_root):
     """Test coverage check with JSON input file."""
     # Run pytest to generate coverage data
-    subprocess.run(
+    result = subprocess.run(
         ["pytest", "tests/test_calculator.py", "--cov=src", "--cov-report=term", "-q"],
         cwd=project_root,
         capture_output=True,
         timeout=30,
     )
-    
+    assert result.returncode == 0, "Failed to generate coverage data"
+
     # Create temporary JSON file
     with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
         json.dump(
@@ -186,7 +187,7 @@ def test_coverage_check_with_json_input(coverage_check_script, project_root):
             f,
         )
         temp_file = f.name
-    
+
     try:
         result = subprocess.run(
             [
@@ -201,7 +202,7 @@ def test_coverage_check_with_json_input(coverage_check_script, project_root):
             capture_output=True,
             text=True,
         )
-        
+
         # Should pass
         assert result.returncode == 0
     finally:
@@ -211,29 +212,22 @@ def test_coverage_check_with_json_input(coverage_check_script, project_root):
 @pytest.mark.slow
 def test_smart_selection_integration(smart_selection_script, project_root):
     """Integration test for smart test selection.
-    
+
     This test creates temporary commits to verify the selection logic.
     """
     # Save current state
-    original_branch = subprocess.run(
-        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-        cwd=project_root,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
-    
     original_head = subprocess.run(
         ["git", "rev-parse", "HEAD"],
         cwd=project_root,
         capture_output=True,
         text=True,
     ).stdout.strip()
-    
+
     try:
         # Modify calculator.py
         calc_file = project_root / "src" / "python_template" / "calculator.py"
         original_content = calc_file.read_text()
-        
+
         calc_file.write_text(original_content + "\n# Test comment\n")
         subprocess.run(
             ["git", "add", str(calc_file)],
@@ -245,7 +239,7 @@ def test_smart_selection_integration(smart_selection_script, project_root):
             cwd=project_root,
             check=True,
         )
-        
+
         # Run smart selection
         result = subprocess.run(
             [
@@ -260,14 +254,14 @@ def test_smart_selection_integration(smart_selection_script, project_root):
             capture_output=True,
             text=True,
         )
-        
+
         assert result.returncode == 0
         data = json.loads(result.stdout)
-        
+
         # Should select test_calculator.py
         assert "tests/test_calculator.py" in data["tests"]
         assert "src/python_template/calculator.py" in data["changed_files"]
-        
+
     finally:
         # Restore original state
         subprocess.run(

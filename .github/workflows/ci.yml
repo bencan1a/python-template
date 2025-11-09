@@ -116,11 +116,11 @@ jobs:
           
           python .github/scripts/smart_test_selection.py --base-ref "$BASE_REF" --format json > test-selection.json
           cat test-selection.json
-          TEST_FILES=$(python .github/scripts/smart_test_selection.py --base-ref "$BASE_REF" --format pytest)
+          TEST_FILES=$(jq -r '.tests | join(" ")' test-selection.json)
           echo "test_files=$TEST_FILES" >> $GITHUB_OUTPUT
           
           # Check if there are changed files
-          CHANGED_FILES=$(python .github/scripts/smart_test_selection.py --base-ref "$BASE_REF" --output-changed-files | wc -l)
+          CHANGED_FILES=$(jq -r '.changed_files | length' test-selection.json)
           echo "changed_files_count=$CHANGED_FILES" >> $GITHUB_OUTPUT
       
       - name: Run tests with coverage
