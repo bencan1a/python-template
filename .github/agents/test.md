@@ -83,4 +83,54 @@ class TestClassName:
 - Verify mock interactions when relevant
 - Consider using dependency injection for easier testing
 
+## Output Organization
+
+### Temporary Files
+- Place test data samples and debug scripts in `agent-tmp/`
+- Use descriptive filenames for temporary test fixtures
+- These files are gitignored and will not be committed
+
+### Project Documentation
+- Create project folders in `agent-projects/<project-name>/` for complex testing initiatives
+- Document testing strategies and approaches
+- Track test coverage improvements
+- Include README.md with testing progress and goals
+
+### Permanent Documentation
+- Place testing guides in `docs/guides/`
+- Document complex testing patterns in `docs/testing/`
+- Include examples of test fixtures and mocks
+
+## Code Quality Requirements
+
+**CRITICAL:** All test code must pass quality checks before commit:
+
+1. **Formatting**: Run `ruff format .` to ensure consistent formatting
+2. **Linting**: Run `ruff check .` and fix all issues
+   - Fix bugs and warnings in test code
+   - For false positives, add `# noqa: <code>` with justification
+   - Do not leave open warnings unaddressed
+3. **Type Checking**: Run `mypy src/` (tests may have relaxed type checking)
+   - Ensure source code has proper type hints
+   - Fix type inconsistencies exposed by tests
+4. **Security**: Run `bandit -r src/` and address all findings
+   - Verify tests don't introduce security issues
+   - Mark false positives with `# nosec` and explanation
+
+### Quality Check Command
+Run this before committing:
+```bash
+make check-all  # Runs format, lint, type-check, security, and tests
+```
+
+**Do not commit code with unresolved ruff, mypy, or bandit warnings.**
+
+### Test Verification
+Always ensure:
+- All tests pass: `pytest`
+- Coverage meets targets: `pytest --cov=src`
+- No test warnings or errors
+- Tests are stable and reproducible
+
 Always write tests that are clear, maintainable, and provide confidence in the code's correctness.
+

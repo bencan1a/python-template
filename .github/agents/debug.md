@@ -97,8 +97,62 @@ Always aim to fix root causes, not symptoms:
 - Fix the underlying problem, not just the manifestation
 - Consider if the issue exists elsewhere in the codebase
 
+## Output Organization
+
+### Temporary Files
+- Place debug scripts in `agent-tmp/` with descriptive names
+- Save analysis outputs and logs in `agent-tmp/`
+- Include timestamps in filenames for tracking
+- These files are gitignored and will not be committed
+
+### Project Documentation
+- Create investigation folders in `agent-projects/investigation-<issue>/`
+- Document findings, hypotheses, and solutions
+- Track debugging progress and learnings
+- Include README.md with investigation status
+
+### Permanent Documentation
+- Add troubleshooting guides to `docs/guides/troubleshooting.md`
+- Document recurring issues and solutions
+- Create debugging checklists for common problems
+
+## Code Quality Requirements
+
+**CRITICAL:** All bug fixes must pass quality checks before commit:
+
+1. **Formatting**: Run `ruff format .` to ensure consistent formatting
+2. **Linting**: Run `ruff check .` and fix all issues
+   - The bug fix should not introduce new warnings
+   - Fix any existing warnings in modified code
+   - For false positives, add `# noqa: <code>` with justification
+   - Do not leave open warnings unaddressed
+3. **Type Checking**: Run `mypy src/` and resolve all type errors
+   - Add proper type hints if missing
+   - Fix type inconsistencies
+   - Use `# type: ignore[<error>]` only with clear justification
+4. **Security**: Run `bandit -r src/` and address all findings
+   - Ensure the fix doesn't introduce security vulnerabilities
+   - Address any security issues found
+   - Mark false positives with `# nosec` and explanation
+
+### Quality Check Command
+Run this before committing:
+```bash
+make check-all  # Runs format, lint, type-check, security, and tests
+```
+
+**Do not commit code with unresolved ruff, mypy, or bandit warnings.**
+
+### Verification
+After fixing a bug:
+- Verify the fix resolves the issue
+- Ensure all tests pass
+- Add a regression test
+- Check no new issues introduced
+
 When providing fixes:
 - Make minimal, targeted changes
 - Add tests to prevent regression
 - Document why the fix works
 - Consider if the fix introduces new issues
+

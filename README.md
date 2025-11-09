@@ -103,6 +103,9 @@ pre-commit run --all-files
 │   ├── agents/            # Custom GitHub Copilot agent profiles
 │   ├── workflows/         # GitHub Actions workflows
 │   └── pull_request_template.md
+├── agent-tmp/             # Temporary agent outputs (gitignored)
+├── agent-projects/        # Active project documentation
+├── docs/                  # Permanent project documentation
 ├── src/
 │   └── python_template/   # Main package source code
 │       ├── __init__.py
@@ -120,6 +123,12 @@ pre-commit run --all-files
 ├── LICENSE               # License file
 └── README.md            # This file
 ```
+
+### Directory Organization
+
+- **`agent-tmp/`**: Temporary files from agents (debug scripts, analysis outputs) - gitignored
+- **`agent-projects/`**: Active project documentation organized by project folders
+- **`docs/`**: Permanent documentation (architecture, guides, ADRs, API docs)
 
 ## 🤖 GitHub Copilot Agent Profiles
 

@@ -83,6 +83,70 @@ Expert in technical writing and documentation.
    - Test agent to create tests
    - Documentation agent to document the implementation
 
+## Agent Output Organization
+
+All agents follow a consistent file organization rubric:
+
+### 📁 `agent-tmp/` - Temporary Files
+- **Purpose**: Ephemeral outputs, debug scripts, analysis files
+- **Usage**: Agents place temporary files here during work
+- **Lifecycle**: Files are gitignored and should be cleaned periodically
+- **Examples**: 
+  - `debug_script_2024-11-09.py`
+  - `performance_analysis.txt`
+  - `test_data_sample.json`
+
+### 📁 `agent-projects/` - Active Projects
+- **Purpose**: Ongoing project documentation and work-in-progress
+- **Usage**: Create subdirectories for each project with descriptive names
+- **Lifecycle**: Active during development, archive when complete
+- **Structure**:
+  ```
+  agent-projects/
+  ├── feature-user-auth/
+  │   ├── README.md (status, progress)
+  │   ├── architecture.md
+  │   └── implementation-plan.md
+  └── investigation-perf-issue/
+      ├── README.md
+      └── findings.md
+  ```
+
+### 📁 `docs/` - Permanent Documentation
+- **Purpose**: Long-term, valuable documentation
+- **Usage**: Final documentation organized by topic
+- **Lifecycle**: Maintained indefinitely, updated as needed
+- **Structure**:
+  ```
+  docs/
+  ├── architecture/
+  ├── guides/
+  ├── api/
+  └── decisions/ (ADRs)
+  ```
+
+## Code Quality Requirements
+
+**CRITICAL**: All agents must ensure code passes quality checks before commit:
+
+1. ✅ **Formatting**: `ruff format .` - Code must be properly formatted
+2. ✅ **Linting**: `ruff check .` - All warnings must be fixed or explicitly ignored
+3. ✅ **Type Checking**: `mypy src/` - Type errors must be resolved
+4. ✅ **Security**: `bandit -r src/` - Security issues must be addressed
+
+### Quality Gate
+Run before committing:
+```bash
+make check-all  # Runs all quality checks
+```
+
+**Agents must not commit code with unresolved ruff, mypy, or bandit warnings.**
+
+For unavoidable warnings:
+- Add `# noqa: <code>` for linting with justification
+- Add `# type: ignore[<error>]` for typing with justification  
+- Add `# nosec` for security false positives with explanation
+
 ## Creating New Agents
 
 To create a new custom agent profile:

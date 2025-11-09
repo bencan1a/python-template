@@ -101,6 +101,19 @@ This template includes custom agent profiles for specialized tasks:
 - **Debugging issues**: `@workspace /agent .github/agents/debug.md Help debug Z`
 - **Documentation**: `@workspace /agent .github/agents/documentation.md Document feature A`
 
+### Agent Output Organization
+
+Agents follow a consistent file organization:
+
+- **`agent-tmp/`**: Temporary files (debug scripts, analysis) - automatically gitignored
+- **`agent-projects/<project-name>/`**: Active project documentation with progress tracking
+- **`docs/`**: Permanent documentation (architecture, guides, API docs, ADRs)
+
+**Example workflow:**
+1. Agent creates `agent-projects/feature-auth/` for active work
+2. Agent uses `agent-tmp/` for debug scripts during development
+3. When complete, final docs go to `docs/architecture/` and `docs/guides/`
+
 ## Common Tasks
 
 ### Adding Dependencies
@@ -166,6 +179,9 @@ your-project/
 ├── .github/
 │   ├── agents/         # GitHub Copilot agent profiles
 │   └── workflows/      # GitHub Actions
+├── agent-tmp/          # Temporary agent outputs (gitignored)
+├── agent-projects/     # Active project documentation
+├── docs/              # Permanent documentation
 ├── src/
 │   └── your_package/   # Your Python package
 ├── tests/              # Test files
@@ -173,6 +189,8 @@ your-project/
 ├── Makefile           # Development commands
 └── README.md          # Project documentation
 ```
+
+## Getting Help
 
 ## Getting Help
 

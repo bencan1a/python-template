@@ -140,6 +140,75 @@ def function_name(param1: str, param2: int) -> bool:
 - Tag documentation versions
 - Archive old versions
 
+## Output Organization
+
+### Temporary Files
+- Place draft documentation and notes in `agent-tmp/`
+- Use descriptive filenames for work-in-progress docs
+- These files are gitignored and will not be committed
+
+### Project Documentation
+- Create documentation projects in `agent-projects/docs-<topic>/`
+- Track documentation progress and TODOs
+- Include outlines and research notes
+- Update as documentation develops
+
+### Permanent Documentation
+- Place final documentation in `docs/` organized by topic:
+  - `docs/architecture/` - System architecture and design
+  - `docs/guides/` - User and developer guides
+  - `docs/api/` - API documentation
+  - `docs/decisions/` - Architecture Decision Records (ADRs)
+  - `docs/tutorials/` - Step-by-step tutorials
+
+## Documentation Structure
+Organize content logically:
+```
+docs/
+├── architecture/
+│   ├── overview.md
+│   └── components.md
+├── guides/
+│   ├── user-guide.md
+│   └── developer-guide.md
+└── api/
+    └── endpoints.md
+```
+
+## Code Quality Requirements
+
+**CRITICAL:** Documentation examples must pass quality checks:
+
+1. **Code Examples**: All code in documentation must be valid
+   - Test code snippets to ensure they work
+   - Run `ruff format` on example code
+   - Ensure examples follow best practices
+2. **Linting**: Run `ruff check .` on any Python files
+   - Fix all warnings in example code
+   - Do not include code with errors
+3. **Type Checking**: Ensure examples use proper type hints
+   - Add type annotations to function examples
+   - Make examples demonstrate good typing practices
+4. **Security**: Review examples for security issues
+   - Don't include vulnerable code patterns
+   - Show secure coding practices
+
+### Quality Check for Code Examples
+Before committing documentation with code:
+```bash
+# Extract and test code examples
+# Ensure examples are properly formatted and typed
+make check-all  # If documentation includes Python files
+```
+
+**Do not include code examples with unresolved issues.**
+
+### Documentation Standards
+- Keep documentation synchronized with code
+- Update docs when code changes
+- Review for accuracy and clarity
+- Test all examples before publishing
+
 When writing documentation:
 1. Understand your audience
 2. Start with the user's perspective
@@ -148,3 +217,4 @@ When writing documentation:
 5. Test all code examples
 6. Review for clarity and accuracy
 7. Get feedback from others
+
