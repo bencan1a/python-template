@@ -52,8 +52,24 @@ jobs:
           bandit -r src/
           echo "::endgroup::"
           
+          echo "::group::Smart Test Selection"
+          python .github/scripts/smart_test_selection.py --base-ref origin/${{ github.base_ref }} --format json > test-selection.json
+          cat test-selection.json
+          TEST_FILES=$(jq -r '.tests | join(" ")' test-selection.json)
+          echo "Selected tests: $TEST_FILES"
+          echo "::endgroup::"
+          
           echo "::group::Tests"
-          pytest --cov=src --cov-report=term
+          if [ -n "$TEST_FILES" ]; then
+            echo "Running selected tests: $TEST_FILES"
+            pytest $TEST_FILES --cov=src --cov-report=term --cov-report=xml
+            
+            echo "::group::Coverage Check"
+            python .github/scripts/check_coverage.py --files-from-json test-selection.json --threshold 70.0
+            echo "::endgroup::"
+          else
+            echo "No relevant tests to run based on changed files"
+          fi
           echo "::endgroup::"
       
       - name: Check for breaking changes

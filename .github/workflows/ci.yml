@@ -90,6 +90,8 @@ jobs:
         python-version: ['3.10', '3.11', '3.12']
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -102,8 +104,40 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e '.[dev]'
       
-      - name: Run tests with pytest
-        run: pytest --cov=src --cov-report=xml --cov-report=term
+      - name: Smart test selection
+        id: test-selection
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_REF="origin/${{ github.base_ref }}"
+          else
+            BASE_REF="origin/main"
+          fi
+          
+          python .github/scripts/smart_test_selection.py --base-ref "$BASE_REF" --format json > test-selection.json
+          cat test-selection.json
+          TEST_FILES=$(jq -r '.tests | join(" ")' test-selection.json)
+          echo "test_files=$TEST_FILES" >> $GITHUB_OUTPUT
+          
+          # Check if there are changed files
+          CHANGED_FILES=$(jq -r '.changed_files | length' test-selection.json)
+          echo "changed_files_count=$CHANGED_FILES" >> $GITHUB_OUTPUT
+      
+      - name: Run tests with coverage
+        shell: bash
+        run: |
+          if [ -n "${{ steps.test-selection.outputs.test_files }}" ]; then
+            echo "Running selected tests: ${{ steps.test-selection.outputs.test_files }}"
+            pytest ${{ steps.test-selection.outputs.test_files }} --cov=src --cov-report=xml --cov-report=term
+          else
+            echo "No relevant tests to run based on changed files"
+          fi
+      
+      - name: Check coverage on changed files
+        if: fromJSON(steps.test-selection.outputs.changed_files_count) > 0 && matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          python .github/scripts/check_coverage.py --files-from-json test-selection.json --threshold 70.0
       
       - name: Upload coverage to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
