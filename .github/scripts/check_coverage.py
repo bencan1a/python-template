@@ -33,9 +33,6 @@ def load_coverage_data(coverage_file: str = ".coverage") -> Coverage:
         cov = Coverage(data_file=coverage_file)
         cov.load()
         return cov
-    except ImportError:
-        print("Error: coverage package not installed", file=sys.stderr)
-        sys.exit(1)
     except Exception as e:
         print(f"Error loading coverage data: {e}", file=sys.stderr)
         sys.exit(1)
