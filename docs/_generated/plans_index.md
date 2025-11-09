@@ -1,13 +1,13 @@
 # Active Plans
 
-**Updated**: 2025-11-09T21:30:33.308820+00:00
+**Updated**: 2025-11-09T21:33:50.803582+00:00
 **Showing**: Plans with status=active created within 21 days
 
-## test-plan
+## demo-plan
 - **Status**: active
-- **Owner**: test-agent
+- **Owner**: demo-agent
 - **Created**: 2025-11-09
-- **Path**: `agent-plans/test-plan/plan.md`
+- **Path**: `agent-plans/demo-plan/plan.md`
 - **Summary**:
-  - Test plan for documentation system
-  - Verify plan parsing and indexing
+  - Demonstrate plan parsing
+  - Validate metadata extraction
