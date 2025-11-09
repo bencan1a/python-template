@@ -24,6 +24,8 @@ This template includes everything you need to start a professional Python projec
 
 ## 🚀 Quick Start
 
+> **⚠️ Important:** This project uses a Python virtual environment for dependency isolation. See [AGENTS.md](AGENTS.md) for complete development workflow guidance.
+
 ### Prerequisites
 
 - Python 3.10 or higher
@@ -40,8 +42,16 @@ This template includes everything you need to start a professional Python projec
    cd your-project-name
    ```
 
-3. **Install dependencies**:
+3. **Set up virtual environment and install dependencies**:
    ```bash
+   # Create virtual environment
+   python3 -m venv venv
+   
+   # Activate it (do this every time you work on the project!)
+   . venv/bin/activate
+   
+   # Install dependencies
+   pip install --upgrade pip
    pip install -e '.[dev]'
    ```
 
@@ -52,13 +62,18 @@ This template includes everything you need to start a professional Python projec
 
 ### Using DevContainer (Recommended)
 
-Open the project in Visual Studio Code and reopen in container when prompted. All dependencies will be automatically installed.
+Open the project in Visual Studio Code and reopen in container when prompted. The virtual environment and all dependencies will be automatically set up.
 
 ## 📖 Usage
+
+> **Remember:** Always activate the virtual environment first: `. venv/bin/activate`
 
 ### Running Tests
 
 ```bash
+# Activate venv first!
+. venv/bin/activate
+
 # Run all tests
 pytest
 
@@ -75,6 +90,9 @@ pytest -k "test_add"
 ### Code Quality Checks
 
 ```bash
+# Activate venv first!
+. venv/bin/activate
+
 # Format code
 ruff format .
 
@@ -140,6 +158,8 @@ This template includes specialized agent profiles in `.github/agents/`:
 - **Documentation Agent**: Technical writing and documentation
 
 See [.github/agents/README.md](.github/agents/README.md) for detailed usage instructions.
+
+> **📖 For Developers and AI Agents:** See [AGENTS.md](AGENTS.md) for critical development workflow guidance, including virtual environment usage, file organization, testing workflow, and code quality requirements.
 
 ## 🔧 Configuration
 

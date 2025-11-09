@@ -2,6 +2,8 @@
 
 This directory contains custom agent profiles optimized for specific development tasks. These profiles provide specialized expertise and context for GitHub Copilot agents.
 
+> **⚠️ CRITICAL:** Before running any Python tools, **ALWAYS activate the virtual environment** with `. venv/bin/activate`. See [../../AGENTS.md](../../AGENTS.md) for complete workflow guidance.
+
 ## Available Agents
 
 ### 🏗️ Architecture Agent (`architecture.md`)
