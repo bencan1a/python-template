@@ -11,10 +11,9 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Set
 
 
-def get_changed_files(base_ref: str = "origin/main") -> List[str]:
+def get_changed_files(base_ref: str = "origin/main") -> list[str]:
     """Get list of changed files compared to base reference.
 
     Args:
@@ -56,7 +55,7 @@ def get_changed_files(base_ref: str = "origin/main") -> List[str]:
         return []
 
 
-def map_source_to_tests(source_files: List[str]) -> Set[str]:
+def map_source_to_tests(source_files: list[str]) -> set[str]:
     """Map source files to their corresponding test files.
 
     Args:
@@ -96,7 +95,7 @@ def map_source_to_tests(source_files: List[str]) -> Set[str]:
     return test_files
 
 
-def get_changed_source_files(changed_files: List[str]) -> List[str]:
+def get_changed_source_files(changed_files: list[str]) -> list[str]:
     """Filter changed files to only include source files in src directory.
 
     Args:
@@ -113,7 +112,7 @@ def get_changed_source_files(changed_files: List[str]) -> List[str]:
     return source_files
 
 
-def main():
+def main() -> int:  # noqa: PLR0912
     """Main entry point for smart test selection."""
     parser = argparse.ArgumentParser(description="Smart test selection based on changed files")
     parser.add_argument(

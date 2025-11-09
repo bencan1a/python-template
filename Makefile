@@ -32,10 +32,10 @@ format-check:  ## Check code formatting without making changes
 	ruff format --check .
 
 type-check:  ## Run type checking
-	mypy src/
+	mypy src/ .github/scripts/
 
 security:  ## Run security checks
-	bandit -r src/
+	bandit -r src/ .github/scripts/ -s B404,B603,B607
 
 check-all:  ## Run all checks (format, lint, type, security, test)
 	@echo "Running format check..."
@@ -43,9 +43,9 @@ check-all:  ## Run all checks (format, lint, type, security, test)
 	@echo "\nRunning lint check..."
 	@ruff check .
 	@echo "\nRunning type check..."
-	@mypy src/
+	@mypy src/ .github/scripts/
 	@echo "\nRunning security check..."
-	@bandit -r src/
+	@bandit -r src/ .github/scripts/ -s B404,B603,B607
 	@echo "\nRunning tests..."
 	@pytest
 

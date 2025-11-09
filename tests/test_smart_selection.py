@@ -47,6 +47,7 @@ def test_smart_selection_json_format(smart_selection_script, project_root):
             "--format",
             "json",
         ],
+        check=False,
         cwd=project_root,
         capture_output=True,
         text=True,
@@ -77,6 +78,7 @@ def test_smart_selection_pytest_format(smart_selection_script, project_root):
             "--format",
             "pytest",
         ],
+        check=False,
         cwd=project_root,
         capture_output=True,
         text=True,
@@ -98,6 +100,7 @@ def test_smart_selection_changed_files_output(smart_selection_script, project_ro
             "HEAD",
             "--output-changed-files",
         ],
+        check=False,
         cwd=project_root,
         capture_output=True,
         text=True,
@@ -112,6 +115,7 @@ def test_coverage_check_with_valid_files(coverage_check_script, project_root):
     # First, run pytest to generate coverage data (just run the calculator tests)
     result = subprocess.run(
         ["pytest", "tests/test_calculator.py", "--cov=src", "--cov-report=term", "-q"],
+        check=False,
         cwd=project_root,
         capture_output=True,
         timeout=30,
@@ -128,6 +132,7 @@ def test_coverage_check_with_valid_files(coverage_check_script, project_root):
             "--threshold",
             "50.0",
         ],
+        check=False,
         cwd=project_root,
         capture_output=True,
         text=True,
@@ -143,6 +148,7 @@ def test_coverage_check_with_high_threshold_fails(coverage_check_script, project
     # Run pytest to generate coverage data
     result = subprocess.run(
         ["pytest", "tests/test_calculator.py", "--cov=src", "--cov-report=term", "-q"],
+        check=False,
         cwd=project_root,
         capture_output=True,
         timeout=30,
@@ -159,6 +165,7 @@ def test_coverage_check_with_high_threshold_fails(coverage_check_script, project
             "--threshold",
             "101.0",
         ],
+        check=False,
         cwd=project_root,
         capture_output=True,
         text=True,
@@ -174,6 +181,7 @@ def test_coverage_check_with_json_input(coverage_check_script, project_root):
     # Run pytest to generate coverage data
     result = subprocess.run(
         ["pytest", "tests/test_calculator.py", "--cov=src", "--cov-report=term", "-q"],
+        check=False,
         cwd=project_root,
         capture_output=True,
         timeout=30,
@@ -198,6 +206,7 @@ def test_coverage_check_with_json_input(coverage_check_script, project_root):
                 "--threshold",
                 "50.0",
             ],
+            check=False,
             cwd=project_root,
             capture_output=True,
             text=True,
@@ -218,6 +227,7 @@ def test_smart_selection_integration(smart_selection_script, project_root):
     # Save current state
     original_head = subprocess.run(
         ["git", "rev-parse", "HEAD"],
+        check=False,
         cwd=project_root,
         capture_output=True,
         text=True,
@@ -250,6 +260,7 @@ def test_smart_selection_integration(smart_selection_script, project_root):
                 "--format",
                 "json",
             ],
+            check=False,
             cwd=project_root,
             capture_output=True,
             text=True,
