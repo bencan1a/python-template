@@ -134,7 +134,7 @@ jobs:
           fi
       
       - name: Check coverage on changed files
-        if: steps.test-selection.outputs.changed_files_count > 0 && matrix.os == 'ubuntu-latest'
+        if: fromJSON(steps.test-selection.outputs.changed_files_count) > 0 && matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
           python .github/scripts/check_coverage.py --files-from-json test-selection.json --threshold 70.0
