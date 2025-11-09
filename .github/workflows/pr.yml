@@ -14,6 +14,36 @@ permissions:
   issues: write
 
 jobs:
+  draft-info:
+    name: Draft PR Info
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == true
+    steps:
+      - name: Comment on draft PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const output = `#### Draft Pull Request 📝
+            
+            This PR is currently marked as a draft. Full validation checks will run automatically when you mark it as ready for review.
+            
+            **What happens when ready for review:**
+            - ✅ Code formatting and linting checks
+            - ✅ Type checking with mypy
+            - ✅ Security scanning with bandit
+            - ✅ Smart test selection and execution
+            - ✅ Coverage validation on changed files
+            
+            Mark this PR as ready for review when you're ready for full validation!
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+  
   validate:
     name: Validate PR
     runs-on: ubuntu-latest
