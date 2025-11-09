@@ -1,3 +1,7 @@
+# Agent temporary files (ephemeral outputs, debug scripts)
+agent-tmp/*
+!agent-tmp/README.md
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
