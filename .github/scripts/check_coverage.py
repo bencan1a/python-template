@@ -8,7 +8,6 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import List
 
 try:
     from coverage import Coverage
@@ -62,7 +61,7 @@ def get_file_coverage(cov, file_path: str) -> float:
 
 
 def check_coverage_threshold(
-    changed_files: List[str], threshold: float = 70.0, coverage_file: str = ".coverage"
+    changed_files: list[str], threshold: float = 70.0, coverage_file: str = ".coverage"
 ) -> bool:
     """Check if coverage meets threshold for changed files.
 
@@ -146,7 +145,7 @@ def main():
 
     if args.files_from_json:
         try:
-            with open(args.files_from_json) as f:
+            with Path(args.files_from_json).open() as f:
                 data = json.load(f)
                 files_to_check = data.get("changed_files", [])
         except Exception as e:
