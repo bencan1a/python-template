@@ -149,11 +149,13 @@ ignore = [
     "E501",   # line too long, handled by formatter
     "PLR0913", # too many arguments
     "PLR2004", # magic value used in comparison
+    "PLR0915", # too many statements - acceptable for main/build functions
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*" = ["PLR2004", "S101", "ARG"]
+"tests/**/*" = ["PLR2004", "S101", "ARG", "SIM102"]
 "__init__.py" = ["F401"]
+"tools/**/*" = ["SIM102"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["python_template"]
