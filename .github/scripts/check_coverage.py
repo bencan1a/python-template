@@ -37,7 +37,7 @@ def load_coverage_data(coverage_file: str = ".coverage") -> Coverage:
         sys.exit(1)
 
 
-def get_file_coverage(cov, file_path: str) -> float:
+def get_file_coverage(cov: Coverage, file_path: str) -> float:
     """Get coverage percentage for a specific file.
 
     Args:
@@ -114,7 +114,7 @@ def check_coverage_threshold(
     return all_pass
 
 
-def main():
+def main() -> int:
     """Main entry point for coverage checking."""
     parser = argparse.ArgumentParser(description="Check coverage threshold for specific files")
     parser.add_argument(

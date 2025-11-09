@@ -112,7 +112,7 @@ def get_changed_source_files(changed_files: list[str]) -> list[str]:
     return source_files
 
 
-def main():  # noqa: PLR0912
+def main() -> int:  # noqa: PLR0912
     """Main entry point for smart test selection."""
     parser = argparse.ArgumentParser(description="Smart test selection based on changed files")
     parser.add_argument(
