@@ -165,14 +165,6 @@ pytest --cov=src
 # Specific test file
 pytest tests/test_module.py
 ```
-- Track test coverage improvements
-- Include README.md with testing progress and goals
-
-### Permanent Documentation
-- Place testing guides in `docs/guides/`
-- Document complex testing patterns in `docs/testing/`
-- Include examples of test fixtures and mocks
-
 ## Code Quality Requirements
 
 **CRITICAL:** All test code must pass quality checks before commit:
