@@ -21,16 +21,21 @@ Welcome to the Python Template! This guide will help you get started quickly.
 
    ### Option B: Local Setup
    ```bash
-   # Create virtual environment
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   # Create virtual environment (use venv for consistency with devcontainer)
+   python3 -m venv venv
+   
+   # Activate virtual environment (CRITICAL - do this every time!)
+   . venv/bin/activate  # On Windows: venv\Scripts\activate
 
    # Install dependencies
+   pip install --upgrade pip
    pip install -e '.[dev]'
 
    # Set up pre-commit hooks
    pre-commit install
    ```
+
+> **⚠️ Important**: Always activate the virtual environment before running any Python commands. If you see "module not found" errors, you likely forgot to activate the venv. See [AGENTS.md](AGENTS.md) for more details.
 
 ## Customization Checklist
 
@@ -57,16 +62,23 @@ Welcome to the Python Template! This guide will help you get started quickly.
 
 ## Daily Development Workflow
 
+> **⚠️ Remember**: Always activate the virtual environment first: `. venv/bin/activate`
+
 ### Making Changes
 
-1. **Create a feature branch**:
+1. **Activate virtual environment**:
+   ```bash
+   . venv/bin/activate  # Do this every time you start working!
+   ```
+
+2. **Create a feature branch**:
    ```bash
    git checkout -b feature/your-feature
    ```
 
-2. **Make your changes** to the code
+3. **Make your changes** to the code
 
-3. **Run checks locally** (pre-commit hooks will run automatically on commit):
+4. **Run checks locally** (pre-commit hooks will run automatically on commit):
    ```bash
    make check-all  # Runs all checks: format, lint, type, security, test
    ```
