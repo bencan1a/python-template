@@ -165,7 +165,6 @@ def generate_api_docs() -> bool:
         for item in SRC_DIR.iterdir():
             if item.is_dir() and (item / "__init__.py").exists():
                 package_name = item.name
-                api_dir / f"{package_name}.md"
 
                 # Generate markdown documentation
                 result = subprocess.run(
