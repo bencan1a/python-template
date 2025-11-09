@@ -1,0 +1,82 @@
+name: Documentation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'docs/**'
+      - 'agent-plans/**'
+      - 'tools/build_context.py'
+      - '.github/workflows/docs.yml'
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+env:
+  CONTEXT_MAX_CHARS: "150000"
+  PLANS_MAX_AGE_DAYS: "21"
+  CLEAN_TMP_AGE_DAYS: "7"
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for git SHA
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pdoc3
+          # Install project dependencies if needed for API doc generation
+          if [ -f pyproject.toml ]; then
+            pip install -e .
+          fi
+      
+      - name: Build documentation
+        run: |
+          python tools/build_context.py
+      
+      - name: Check for changes
+        id: check_changes
+        run: |
+          git diff --quiet docs/ || echo "changed=true" >> $GITHUB_OUTPUT
+      
+      - name: Commit and push if changed
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git commit -m "chore: auto-update documentation [skip ci]"
+          git push
+      
+      - name: Summary
+        run: |
+          echo "### Documentation Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f docs/CONTEXT.md ]; then
+            CONTEXT_SIZE=$(wc -c < docs/CONTEXT.md)
+            echo "✅ CONTEXT.md generated (${CONTEXT_SIZE} bytes)" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -f docs/_generated/plans_index.md ]; then
+            PLAN_COUNT=$(grep -c "^## " docs/_generated/plans_index.md || echo "0")
+            echo "📋 Active plans: ${PLAN_COUNT}" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -d docs/_generated/api ]; then
+            API_COUNT=$(find docs/_generated/api -name "*.html" -o -name "*.md" | wc -l)
+            echo "📚 API docs generated: ${API_COUNT} files" >> $GITHUB_STEP_SUMMARY
+          fi
