@@ -1,7 +1,7 @@
 # Project Documentation Context
 
-**Generated**: 2025-11-09T21:30:33.309048+00:00
-**Source SHA**: 692a82a8a1e904517acdc54884caa19546f28959
+**Generated**: 2025-11-09T21:33:07.372056+00:00
+**Source SHA**: 692e0760026f379381f7832b882cedbfc53b6b63
 **Max Size**: 150,000 characters
 
 This file provides comprehensive context about the project for AI agents and developers.
@@ -50,17 +50,6 @@ This file provides comprehensive context about the project for AI agents and dev
   }
 }
 ```
-
-## Active Plans
-
-There are 1 active plan(s):
-
-### test-plan
-- Owner: test-agent
-- Created: 2025-11-09
-- Summary:
-  - Test plan for documentation system
-  - Verify plan parsing and indexing
 
 ## API Documentation
 
