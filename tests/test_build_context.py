@@ -170,7 +170,7 @@ class TestFolderStructure:
         repo_root = Path(__file__).parent.parent
 
         required_files = [
-            "AGENT_DOCS_CONTRACT.md",
+            "AGENTS.md",
             "docs/facts.json",
             "docs/CONTEXT.md",
             "docs/SUMMARY.md",

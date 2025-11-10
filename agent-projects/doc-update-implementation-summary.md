@@ -12,7 +12,7 @@ Successfully implemented the automated documentation management system as specif
 
 ### Files Created
 
-1. **AGENT_DOCS_CONTRACT.md** (6,021 bytes)
+1. **AGENTS.md** (consolidated agent guidance)
    - Comprehensive documentation folder rules
    - Trust hierarchy definition
    - Agent operating guidelines
@@ -62,7 +62,7 @@ Successfully implemented the automated documentation management system as specif
    - Added auto-generated docs section
 
 2. **AGENTS.md**
-   - Added AGENT_DOCS_CONTRACT.md reference at top
+   - Added AGENTS.md reference at top
    - Updated file organization section
    - Added documentation system section
 
@@ -91,7 +91,7 @@ project/
 │       └── plans_index.md  # Active plans summary
 ├── tools/
 │   └── build_context.py    # Documentation builder
-└── AGENT_DOCS_CONTRACT.md  # Documentation rules
+└── AGENTS.md              # Documentation rules and agent guidance
 ```
 
 ## Validation Results
@@ -159,7 +159,7 @@ python tools/build_context.py
 1. Read `docs/CONTEXT.md` for project context
 2. Check `docs/facts.json` for stable truths
 3. Review `docs/_generated/plans_index.md` for active work
-4. Follow rules in `AGENT_DOCS_CONTRACT.md`
+4. Follow rules in `AGENTS.md`
 
 ### For Developers
 1. Update `docs/facts.json` for project changes
