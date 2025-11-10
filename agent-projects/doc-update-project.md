@@ -34,7 +34,7 @@ You must respect these folder purposes:
   build_context.py          # script that assembles all docs
 /.github/workflows/
   docs.yml                  # GitHub Action for nightly + push builds
-AGENT_DOCS_CONTRACT.md      # human/agent-readable folder rules
+AGENTS.md                   # human/agent-readable folder rules and guidance
 .gitignore
 ```
 
@@ -119,7 +119,7 @@ CLEAN_TMP_AGE_DAYS: "7"
 ## Implementation Checklist
 
 1. Create the folder structure exactly as shown.
-2. Copy in `AGENT_DOCS_CONTRACT.md`, `.gitignore`, `build_context.py`, and `docs.yml`.
+2. Copy in `AGENTS.md`, `.gitignore`, `build_context.py`, and `docs.yml`.
 3. Install pdoc3 (`pip install pdoc3`) and optionally typedoc (`npm i -g typedoc typedoc-plugin-markdown`).
 4. Commit everything.
 5. Verify the workflow runs successfully on the next commit.

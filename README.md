@@ -112,6 +112,57 @@ bandit -r src/
 pre-commit run --all-files
 ```
 
+## 🎯 Customizing This Template
+
+After installing, customize the template for your project:
+
+### Quick Customization Checklist
+
+- [ ] **Update `pyproject.toml`**:
+  - Change project name from `python-template` to your project name
+  - Update author information
+  - Update description and URLs
+  
+- [ ] **Rename package directory**:
+  ```bash
+  mv src/python_template src/your_package_name
+  ```
+
+- [ ] **Update imports in**:
+  - `src/your_package_name/__init__.py`
+  - Test files
+  - README examples
+
+- [ ] **Update README.md** with your project information
+
+- [ ] **Review GitHub Actions workflows** in `.github/workflows/`
+
+### Daily Development Workflow
+
+1. **Activate virtual environment** (always do this first!):
+   ```bash
+   . venv/bin/activate
+   ```
+
+2. **Create a feature branch**:
+   ```bash
+   git checkout -b feature/your-feature
+   ```
+
+3. **Make your changes** to the code
+
+4. **Run checks locally**:
+   ```bash
+   make check-all  # Runs all checks
+   ```
+
+5. **Commit and push**:
+   ```bash
+   git add .
+   git commit -m "feat: Add awesome feature"
+   git push origin feature/your-feature
+   ```
+
 ## 🗂️ Project Structure
 
 ```
@@ -161,27 +212,14 @@ See [.github/agents/README.md](.github/agents/README.md) for detailed usage inst
 
 > **📖 For Developers and AI Agents:** See [AGENTS.md](AGENTS.md) for critical development workflow guidance, including virtual environment usage, file organization, testing workflow, and code quality requirements.
 
-## 🔧 Configuration
+## 🔧 Advanced Configuration
 
-### Customizing for Your Project
+For advanced users who want to customize beyond the basics:
 
-1. **Update `pyproject.toml`**:
-   - Change `name`, `description`, `authors`
-   - Add your specific dependencies
-   - Adjust tool configurations as needed
-
-2. **Update package name**:
-   - Rename `src/python_template/` to your package name
-   - Update imports in `__init__.py` and tests
-
-3. **Configure GitHub Actions**:
-   - Review workflows in `.github/workflows/`
-   - Adjust Python versions, OS matrices as needed
-   - Add secrets for deployment if required
-
-4. **Update README**:
-   - Replace this content with your project documentation
-   - Update badges with your repository information
+- **Tool configurations**: Adjust settings in `pyproject.toml` for ruff, mypy, pytest, etc.
+- **GitHub Actions**: Customize workflows in `.github/workflows/` for your CI/CD needs
+- **Pre-commit hooks**: Modify `.pre-commit-config.yaml` to add/remove checks
+- **DevContainer**: Customize `.devcontainer/devcontainer.json` for your development environment
 
 ## 🧰 Pre-installed Tools
 
