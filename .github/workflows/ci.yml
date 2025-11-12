@@ -6,6 +6,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [ main, develop ]
+  workflow_dispatch:  # Allow manual triggering
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -14,11 +15,53 @@ concurrency:
 permissions:
   contents: read
   pull-requests: read
+  security-events: write  # For uploading SARIF files
 
 jobs:
+  # Check if we should skip tests for docs-only changes
+  check-changes:
+    name: Check for Code Changes
+    runs-on: ubuntu-latest
+    outputs:
+      should-skip-tests: ${{ steps.skip-check.outputs.should_skip_tests }}
+      python-files-changed: ${{ steps.skip-check.outputs.python_changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check changed files
+        id: skip-check
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            FILES_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          else
+            FILES_CHANGED=$(git diff --name-only HEAD^ HEAD)
+          fi
+          
+          PYTHON_CHANGED=$(echo "$FILES_CHANGED" | grep -E '\.(py|pyi)$' || echo "")
+          WORKFLOW_CHANGED=$(echo "$FILES_CHANGED" | grep -E '\.github/workflows/.*\.yml$' || echo "")
+          DEPS_CHANGED=$(echo "$FILES_CHANGED" | grep -E '(pyproject\.toml|requirements.*\.txt)$' || echo "")
+          
+          # Skip tests if only docs/README/markdown files changed
+          DOCS_ONLY=$(echo "$FILES_CHANGED" | grep -v -E '\.(py|pyi|yml|toml|txt)$' || echo "docs-only")
+          
+          if [ -n "$PYTHON_CHANGED" ] || [ -n "$WORKFLOW_CHANGED" ] || [ -n "$DEPS_CHANGED" ]; then
+            echo "should_skip_tests=false" >> $GITHUB_OUTPUT
+            echo "python_changed=true" >> $GITHUB_OUTPUT
+          elif [ "$DOCS_ONLY" = "docs-only" ]; then
+            echo "should_skip_tests=true" >> $GITHUB_OUTPUT
+            echo "python_changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "should_skip_tests=false" >> $GITHUB_OUTPUT
+            echo "python_changed=false" >> $GITHUB_OUTPUT
+          fi
+
   lint:
     name: Lint and Format Check
     runs-on: ubuntu-latest
+    needs: check-changes
+    if: needs.check-changes.outputs.should-skip-tests == 'false'
     steps:
       - uses: actions/checkout@v4
       
@@ -27,6 +70,14 @@ jobs:
         with:
           python-version: '3.12'
           cache: 'pip'
+      
+      - name: Cache pre-commit hooks
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            pre-commit-${{ runner.os }}-
       
       - name: Install dependencies
         run: |
@@ -37,11 +88,13 @@ jobs:
         run: ruff format --check .
       
       - name: Lint with ruff
-        run: ruff check .
+        run: ruff check . --output-format=github
 
   type-check:
     name: Type Check
     runs-on: ubuntu-latest
+    needs: check-changes
+    if: needs.check-changes.outputs.should-skip-tests == 'false'
     steps:
       - uses: actions/checkout@v4
       
@@ -57,11 +110,16 @@ jobs:
           pip install -e '.[dev]'
       
       - name: Type check with mypy
-        run: mypy src/
+        run: mypy src/ --no-error-summary
 
   security:
     name: Security Scan
     runs-on: ubuntu-latest
+    needs: check-changes
+    if: needs.check-changes.outputs.should-skip-tests == 'false'
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v4
       
@@ -77,18 +135,44 @@ jobs:
           pip install -e '.[dev]'
       
       - name: Security check with bandit
-        run: bandit -r src/ -f json -o bandit-report.json || true
+        run: |
+          bandit -r src/ -f json -o bandit-report.json || true
+          bandit -r src/ -f sarif -o bandit-report.sarif || true
+      
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: bandit-report.sarif
+          category: bandit
       
       - name: Display bandit results
         run: bandit -r src/
+      
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-report
+          path: bandit-report.json
+          retention-days: 30
 
   test:
     name: Test
     runs-on: ${{ matrix.os }}
+    needs: [check-changes, lint, type-check]
+    if: needs.check-changes.outputs.should-skip-tests == 'false'
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ['3.10', '3.11', '3.12']
+        # Reduce matrix for PRs to save resources
+        exclude:
+          - os: ${{ github.event_name == 'pull_request' && 'windows-latest' || '' }}
+            python-version: '3.10'
+          - os: ${{ github.event_name == 'pull_request' && 'macos-latest' || '' }}
+            python-version: '3.10'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -99,6 +183,15 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
+      
+      - name: Cache pytest cache
+        uses: actions/cache@v4
+        with:
+          path: .pytest_cache
+          key: pytest-cache-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('tests/**/*.py') }}
+          restore-keys: |
+            pytest-cache-${{ runner.os }}-${{ matrix.python-version }}-
+            pytest-cache-${{ runner.os }}-
       
       - name: Install dependencies
         run: |
@@ -129,7 +222,7 @@ jobs:
         run: |
           if [ -n "${{ steps.test-selection.outputs.test_files }}" ]; then
             echo "Running selected tests: ${{ steps.test-selection.outputs.test_files }}"
-            pytest ${{ steps.test-selection.outputs.test_files }} --cov=src --cov-report=xml --cov-report=term
+            pytest ${{ steps.test-selection.outputs.test_files }} --cov=src --cov-report=xml --cov-report=term --cov-report=html
           else
             echo "No relevant tests to run based on changed files"
           fi
@@ -146,3 +239,62 @@ jobs:
         with:
           file: ./coverage.xml
           fail_ci_if_error: false
+          flags: unittests
+          name: codecov-${{ matrix.os }}-py${{ matrix.python-version }}
+      
+      - name: Upload coverage report
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            coverage.xml
+            htmlcov/
+            .coverage
+          retention-days: 30
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            .pytest_cache/
+            test-selection.json
+          retention-days: 7
+  
+  # Summary job that depends on all checks
+  ci-success:
+    name: CI Success
+    runs-on: ubuntu-latest
+    needs: [check-changes, lint, type-check, security, test]
+    if: always()
+    steps:
+      - name: Check all jobs
+        run: |
+          if [ "${{ needs.check-changes.outputs.should-skip-tests }}" = "true" ]; then
+            echo "✅ Skipped tests for docs-only changes"
+            exit 0
+          fi
+          
+          if [ "${{ needs.lint.result }}" != "success" ] || \
+             [ "${{ needs.type-check.result }}" != "success" ] || \
+             [ "${{ needs.security.result }}" != "success" ] || \
+             [ "${{ needs.test.result }}" != "success" ]; then
+            echo "❌ One or more CI jobs failed"
+            exit 1
+          fi
+          
+          echo "✅ All CI jobs passed"
+      
+      - name: Generate summary
+        if: always()
+        run: |
+          echo "## CI Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint | ${{ needs.lint.result == 'success' && '✅' || needs.lint.result == 'skipped' && '⏭️' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Type Check | ${{ needs.type-check.result == 'success' && '✅' || needs.type-check.result == 'skipped' && '⏭️' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security | ${{ needs.security.result == 'success' && '✅' || needs.security.result == 'skipped' && '⏭️' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests | ${{ needs.test.result == 'success' && '✅' || needs.test.result == 'skipped' && '⏭️' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
