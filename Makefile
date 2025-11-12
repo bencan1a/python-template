@@ -37,6 +37,14 @@ type-check:  ## Run type checking
 security:  ## Run security checks
 	bandit -r src/ .github/scripts/ -s B404,B603,B607
 
+security-report:  ## Run security checks and generate JSON report
+	bandit -r src/ .github/scripts/ -f json -o bandit-report.json -s B404,B603,B607 || true
+	bandit -r src/ .github/scripts/ -s B404,B603,B607
+	@echo "Security report generated: bandit-report.json"
+
+check-yaml:  ## Check YAML file syntax
+	python -c "import yaml; import sys; from pathlib import Path; [yaml.safe_load(f.read_text()) for f in Path('.github/workflows').glob('*.yml')]"
+
 check-all:  ## Run all checks (format, lint, type, security, test)
 	@echo "Running format check..."
 	@ruff format --check .

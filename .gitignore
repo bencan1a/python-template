@@ -50,6 +50,16 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Security scan reports
+bandit-report.json
+bandit-report.sarif
+coverage.xml
+*.cover
 *.py.cover
 .hypothesis/
 .pytest_cache/
