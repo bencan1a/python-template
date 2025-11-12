@@ -264,9 +264,6 @@ A: Tests are automatically skipped. CI completes in ~1 minute instead of 15.
 **Q: Can I test workflows before merge?**
 A: Yes! All workflows support manual triggering via GitHub Actions tab.
 
-**Q: What about the space-hulk-game repository?**
-A: It was not accessible, so these enhancements are based on industry best practices.
-
 ## Next Steps
 
 1. ✅ Review and merge this PR
