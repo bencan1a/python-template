@@ -1,35 +1,52 @@
 # GitHub Workflows Enhancement Documentation
 
-This document describes the enhancements made to the GitHub Actions workflows in this repository, backported from best practices and common patterns used in production repositories.
+This document describes the enhancements made to the GitHub Actions workflows in this repository, backported from the space-hulk-game repository and production best practices.
+
+## Latest Updates (Backported from space-hulk-game)
+
+The following enhancements have been incorporated from the space-hulk-game repository:
+
+- **`uv` for Faster Dependency Installation**: All workflows now use `uv pip install` instead of plain `pip install` for significantly faster dependency installation
+- **Auto-fix Step**: Lint job includes an auto-fix step with `continue-on-error: true` before validation checks
+- **YAML Validation**: Added `make check-yaml` target to validate all workflow YAML files
+- **Makefile Integration**: Workflows use Makefile commands (`make lint`, `make format-check`, `make type-check`, `make security-report`) for consistency
+- **Enhanced CI Summary**: Summary job renamed to "CI Summary" matching space-hulk-game pattern with improved result checking
 
 ## Overview of Workflows
 
 ### 1. CI Workflow (`ci.yml`) - Enhanced ✨
 
 **New Features:**
+- **`uv` Package Installer**: Uses `uv pip install --system` for ~10x faster dependency installation
+- **Auto-fix Step**: Runs `make fix` with `continue-on-error: true` before checks to auto-correct issues
+- **YAML Validation**: Validates all workflow YAML files as part of linting
 - **Smart Change Detection**: Automatically detects if only documentation files changed and skips unnecessary tests
 - **Pre-commit Cache**: Caches pre-commit hooks to speed up lint jobs
 - **Pytest Cache**: Caches pytest results for faster test execution
 - **Enhanced Security Scanning**: 
-  - Generates SARIF reports for GitHub Security tab integration
+  - Generates JSON security reports for artifacts
   - Uploads security reports as artifacts for later review
 - **Improved Artifact Management**: Uploads coverage reports, test results, and selection metadata
 - **Job Dependencies**: Tests now depend on lint and type-check passing, saving CI resources
 - **Matrix Optimization**: Reduces matrix size for PRs (excludes some OS/Python combinations)
-- **GitHub Annotations**: Ruff now outputs in GitHub format for inline PR comments
-- **CI Success Summary**: Final job provides overall status with detailed summary
+- **Makefile Commands**: Uses `make` commands for consistency (`make lint`, `make format-check`, `make type-check`, `make security-report`)
+- **CI Summary Job**: Final summary job renamed to "CI Summary" with improved result checking
 - **Manual Trigger**: Added `workflow_dispatch` for manual runs
 
 **Benefits:**
-- Faster PR checks (skips unnecessary tests, smaller matrix)
-- Better visibility of issues (SARIF integration, job summaries)
+- Significantly faster PR checks (~10x faster dependency install with uv)
+- Auto-fixes many common issues before validation
+- Better visibility of issues (job summaries, YAML validation)
 - Resource savings (job dependencies, smart caching)
+- Consistency through Makefile usage
 
 ### 2. Nightly Regression Workflow (`nightly.yml`) - Enhanced ✨
 
 **New Features:**
+- **`uv` Package Installer**: Uses `uv pip install --system` for faster dependency installation
+- **Makefile Commands**: Uses `make security-report` and `make type-check` for consistency
 - **Parameterized Manual Triggers**: Can select specific OS or Python version to test
-- **Enhanced Security Scanning**: Generates both JSON and SARIF reports
+- **Enhanced Security Scanning**: Generates JSON security reports
 - **SBOM Generation**: Creates Software Bill of Materials using CycloneDX
 - **Improved Dependency Auditing**: 
   - Uses both `pip-audit` and `safety` for comprehensive scanning
@@ -42,14 +59,17 @@ This document describes the enhancements made to the GitHub Actions workflows in
 - **Enhanced Summaries**: Detailed job status table in workflow summary
 
 **Benefits:**
+- Faster nightly runs with uv
 - Comprehensive security monitoring
 - Better compliance (SBOM generation)
 - Reduced issue spam
 - More targeted debugging capabilities
+- Consistency with CI workflow through Makefile usage
 
 ### 3. Documentation Workflow (`docs.yml`) - Enhanced ✨
 
 **New Features:**
+- **`uv` Package Installer**: Uses `uv pip install --system` for faster dependency installation
 - **Documentation Caching**: Caches built documentation to speed up rebuilds
 - **Validation Step**: Verifies critical files were generated and checks size limits
 - **Parameterized Dispatch**: Can force rebuild all documentation
@@ -58,7 +78,7 @@ This document describes the enhancements made to the GitHub Actions workflows in
 - **Better Status Reporting**: Shows whether docs were updated or already current
 
 **Benefits:**
-- Faster documentation builds
+- Faster documentation builds with uv
 - Catches documentation generation errors early
 - Downloadable documentation for offline review
 
