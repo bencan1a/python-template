@@ -9,7 +9,7 @@ on:
   workflow_dispatch:  # Allow manual triggering
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 permissions:
@@ -165,12 +165,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ['3.10', '3.11', '3.12']
-        # Reduce matrix for PRs to save resources
-        exclude:
-          - os: ${{ github.event_name == 'pull_request' && 'windows-latest' || '' }}
-            python-version: '3.10'
-          - os: ${{ github.event_name == 'pull_request' && 'macos-latest' || '' }}
-            python-version: '3.10'
     steps:
       - uses: actions/checkout@v4
         with:
