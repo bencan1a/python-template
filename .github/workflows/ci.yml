@@ -275,6 +275,22 @@ jobs:
             exit 0
           fi
           
+          # Check if tests were skipped (when check-changes determines no tests needed)
+          if [[ "${{ needs.test.result }}" == "skipped" ]]; then
+            echo "✅ Tests skipped (not needed for this change)"
+            # Only check other jobs when tests are skipped
+            if [[ "${{ needs.lint.result }}" == "success" ]] && \
+               [[ "${{ needs.type-check.result }}" == "success" ]] && \
+               [[ "${{ needs.security.result }}" == "success" ]]; then
+              echo "✅ All required CI checks passed"
+              exit 0
+            else
+              echo "❌ Some CI checks failed"
+              exit 1
+            fi
+          fi
+          
+          # Normal path - all jobs should succeed
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
              [[ "${{ needs.type-check.result }}" != "success" ]] || \
              [[ "${{ needs.security.result }}" != "success" ]] || \
