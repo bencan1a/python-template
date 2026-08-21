@@ -10,6 +10,14 @@ Each entry includes:
 
 ---
 
+## Build at 2026-08-21T02:29:58.405199+00:00
+**Source SHA**: 1f0e2a6cbdf749c91cf4d307ee5d7cbf397cec00
+
+### Changes
+- Regenerated API documentation
+- Rebuilt CONTEXT.md (3,849 chars)
+- Updated SUMMARY.md
+
 ## Build at 2026-08-20T02:26:09.948592+00:00
 **Source SHA**: deea5240c52cfcfaf5e704137bb9127959f67f6b
 
